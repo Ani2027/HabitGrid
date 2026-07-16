@@ -1,4 +1,3 @@
-import { response } from "express";
 import userModel from "../models/user.model.js"
 import jwt from "jsonwebtoken"; // ye dekhta hai ki user kaun hai aur uska token valid hai ya nahi
 import config from "../config/config.js";
@@ -38,9 +37,9 @@ export async function register(req, res) {
 
         // Ab dikkat aati hai ki if A ka token B ko mil jaye to B A ke account me login kar sakta hai, to hm use krte hain accesstoken & refreshtoken, jisme accesstoken short time ke liye valid hota hai aur refreshtoken long time ke liye valid hota hai.
 
-        const accessToken = jwt.sign({ id: user._id }, config.JWTSecret, { expiresIn: "15m" }); // ye 15 minute ke liye valid hoga, isse hm access token bolte hain.
+        const accessToken = jwt.sign({ id: user._id, type: "access" }, config.JWTSecret, { expiresIn: "15m" }); // ye 15 minute ke liye valid hoga, isse hm access token bolte hain.
 
-        const refreshToken = jwt.sign({ id: user._id }, config.JWTSecret, { expiresIn: "7d" }); // ye 7 din ke liye valid hoga, isse hm refresh token bolte hain.
+        const refreshToken = jwt.sign({ id: user._id, type: "refresh" }, config.JWTSecret, { expiresIn: "7d" }); // ye 7 din ke liye valid hoga, isse hm refresh token bolte hain.
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true, // ye islie use hota hai ki client side javascript se access na ho sake, sirf server se access ho sake.
@@ -98,8 +97,8 @@ export async function login(req, res) {
             });
         }
 
-        const accessToken = jwt.sign({ id: user._id }, config.JWTSecret, { expiresIn: "15m" });
-        const refreshToken = jwt.sign({ id: user._id }, config.JWTSecret, { expiresIn: "7d" });
+        const accessToken = jwt.sign({ id: user._id, type: "access" }, config.JWTSecret, { expiresIn: "15m" });
+        const refreshToken = jwt.sign({ id: user._id, type: "refresh" }, config.JWTSecret, { expiresIn: "7d" });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
