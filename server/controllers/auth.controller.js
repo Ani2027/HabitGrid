@@ -2,6 +2,17 @@ import userModel from "../models/user.model.js"
 import jwt from "jsonwebtoken"; // ye dekhta hai ki user kaun hai aur uska token valid hai ya nahi
 import config from "../config/config.js";
 
+// Bug fix: centralize cookie options — secure:false + sameSite:"lax" in dev so cookies
+// work over HTTP (localhost). In production (HTTPS) both are set to true/"strict".
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,             // BUG FIX: was always true, broke localhost (HTTP)
+    sameSite: isProduction ? "strict" : "lax", // BUG FIX: "strict" blocked cross-port dev cookies
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 export async function register(req, res) {
     try {
         const { username, email, password } = req.body;
@@ -41,12 +52,13 @@ export async function register(req, res) {
 
         const refreshToken = jwt.sign({ id: user._id, type: "refresh" }, config.JWTSecret, { expiresIn: "7d" }); // ye 7 din ke liye valid hoga, isse hm refresh token bolte hain.
 
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true, // ye islie use hota hai ki client side javascript se access na ho sake, sirf server se access ho sake.
-            secure: true, // ye islie use hota hai ki sirf https me hi cookie send ho, http me nahi.
-            sameSite: "strict", // ye islie use hota hai ki cross site request me cookie send na ho, sirf same site request me hi cookie send ho.
-            maxAge: 7 * 24 * 60 * 60 * 1000, // ye islie use hota hai ki cookie ka expiration time set ho, yahan 7 din ke liye set kiya gaya hai.
-        });
+        // res.cookie("refreshToken", refreshToken, {
+        //     httpOnly: true, // ye islie use hota hai ki client side javascript se access na ho sake, sirf server se access ho sake.
+        //     secure: true, // ye islie use hota hai ki sirf https me hi cookie send ho, http me nahi.
+        //     sameSite: "strict", // ye islie use hota hai ki cross site request me cookie send na ho, sirf same site request me hi cookie send ho.
+        //     maxAge: 7 * 24 * 60 * 60 * 1000, // ye islie use hota hai ki cookie ka expiration time set ho, yahan 7 din ke liye set kiya gaya hai.
+        // });
+        res.cookie("refreshToken", refreshToken, cookieOptions);
 
         res.status(201).json({
             message: "User registered successfully",
@@ -100,12 +112,14 @@ export async function login(req, res) {
         const accessToken = jwt.sign({ id: user._id, type: "access" }, config.JWTSecret, { expiresIn: "15m" });
         const refreshToken = jwt.sign({ id: user._id, type: "refresh" }, config.JWTSecret, { expiresIn: "7d" });
 
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        // res.cookie("refreshToken", refreshToken, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "strict",
+        //     maxAge: 7 * 24 * 60 * 60 * 1000,
+        // });
+        
+        res.cookie("refreshToken", refreshToken, cookieOptions);
 
         return res.status(200).json({
             message: "User logged in successfully",
@@ -196,17 +210,19 @@ export async function refreshToken(req, res) {
 
         const newRefreshToken = jwt.sign({ id: decoded.id, type : "refresh" }, config.JWTSecret, { expiresIn: "7d" }); // ye refresh token 7 din ke liye valid hoga.
 
-        res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        // res.cookie("refreshToken", newRefreshToken, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "strict",
+        //     maxAge: 7 * 24 * 60 * 60 * 1000,
+        // });
+        
+        res.cookie("refreshToken", newRefreshToken, cookieOptions);
 
         return res.status(200).json({
-        message: "Access token generated successfully",
-        accessToken,
-    });
+            message: "Access token generated successfully",
+            accessToken,
+        });
 
     } catch (error) {
         console.error(error);
@@ -216,15 +232,32 @@ export async function refreshToken(req, res) {
         });
     }
 
+    /*
+        Beginner error : I had put this statement outside the tryblock. Which was causing the error "decoded is not defined".
+        
+        const accessToken = jwt.sign({ id: decoded.id }, config.JWTSecret, { expiresIn: "15m" }); // ye access toke  15 minute ke liye valid hoga.
 
-/*
-    Beginner error : I had put this statement outside the tryblock. Which was causing the error "decoded is not defined".
-    
-    const accessToken = jwt.sign({ id: decoded.id }, config.JWTSecret, { expiresIn: "15m" }); // ye access toke  15 minute ke liye valid hoga.
-
-    res.status(200).json({
-        message: "Access token generated successfully",
-        accessToken,
-    });
-*/
+        res.status(200).json({
+            message: "Access token generated successfully",
+            accessToken,
+        });
+    */
 };
+
+export async function logout(req, res) {
+    try {
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "strict" : "lax",
+        });
+        return res.status(200).json({
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
