@@ -6,9 +6,14 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+// ALLOWED_ORIGIN env var = your Vercel frontend URL in production
+// e.g. https://habit-grid.vercel.app
+// Falls back to localhost for local development
+const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:5174";
+
 app.use(cors({
-    origin: "http://localhost:5173", // React dev server URL
-    credentials: true,              // allows cookies (refresh token) to be sent
+    origin: allowedOrigin,
+    credentials: true, // required so httpOnly refreshToken cookie is sent cross-origin
 }));
 
 app.use(morgan("dev"));

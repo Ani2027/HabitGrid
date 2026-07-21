@@ -3,14 +3,16 @@ import jwt from "jsonwebtoken"; // ye dekhta hai ki user kaun hai aur uska token
 import config from "../config/config.js";
 
 // Bug fix: centralize cookie options — secure:false + sameSite:"lax" in dev so cookies
-// work over HTTP (localhost). In production (HTTPS) both are set to true/"strict".
+// work over HTTP (localhost).
+// In production: Vercel (frontend) and Render (backend) are different domains, so we
+// need sameSite:"none" + secure:true — browsers block cross-domain cookies otherwise.
 const isProduction = process.env.NODE_ENV === "production";
 
 const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,             // BUG FIX: was always true, broke localhost (HTTP)
-    sameSite: isProduction ? "strict" : "lax", // BUG FIX: "strict" blocked cross-port dev cookies
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: isProduction,                         // must be true when sameSite is "none"
+    sameSite: isProduction ? "none" : "lax",      // "none" = allow cross-domain (Vercel ↔ Render)
+    maxAge: 7 * 24 * 60 * 60 * 1000,             // 7 days
 };
 
 export async function register(req, res) {
