@@ -31,9 +31,11 @@ const Register = () => {
 
     return (
         <AuthLayout subtitle="Create your new workspace">
-            <form onSubmit={handleSubmit}>
-                <div className="input-field">
-                    <label htmlFor="username">Username</label>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="username" className="text-[12px] font-medium uppercase tracking-wider text-gray-500">
+                        Username
+                    </label>
                     <input
                         type="text"
                         id="username"
@@ -42,11 +44,14 @@ const Register = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         required
                         disabled={isLoading}
+                        className="w-full text-sm px-3.5 py-3 border border-gray-200 rounded bg-transparent text-black outline-none transition focus:border-black focus:ring-1 focus:ring-black disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-gray-300"
                     />
                 </div>
 
-                <div className="input-field">
-                    <label htmlFor="email">Email address</label>
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="email" className="text-[12px] font-medium uppercase tracking-wider text-gray-500">
+                        Email address
+                    </label>
                     <input
                         type="email"
                         id="email"
@@ -55,11 +60,14 @@ const Register = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isLoading}
+                        className="w-full text-sm px-3.5 py-3 border border-gray-200 rounded bg-transparent text-black outline-none transition focus:border-black focus:ring-1 focus:ring-black disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-gray-300"
                     />
                 </div>
 
-                <div className="input-field">
-                    <label htmlFor="password">Password</label>
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="password" className="text-[12px] font-medium uppercase tracking-wider text-gray-500">
+                        Password
+                    </label>
                     <input
                         type="password"
                         id="password"
@@ -68,20 +76,33 @@ const Register = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={isLoading}
+                        className="w-full text-sm px-3.5 py-3 border border-gray-200 rounded bg-transparent text-black outline-none transition focus:border-black focus:ring-1 focus:ring-black disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-gray-300"
                     />
                 </div>
 
-                {error && <div className="error-message">{error}</div>}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded leading-relaxed">
+                        {error}
+                    </div>
+                )}
 
-                <button type="submit" className="btn-submit" disabled={isLoading}>
-                    {isLoading && <div className="spinner" />}
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full mt-2 bg-black text-white rounded py-3 text-sm font-medium hover:bg-neutral-800 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                    {isLoading && (
+                        <div className="w-3.5 h-3.5 border-2 border-white/35 border-t-white rounded-full animate-spin" />
+                    )}
                     {isLoading ? "Creating account..." : "Register"}
                 </button>
             </form>
 
-            <div className="auth-footer">
+            <div className="text-center mt-8 text-xs text-gray-500">
                 Already have an account?
-                <Link to="/login">Log in</Link>
+                <Link to="/login" className="text-black font-semibold hover:underline ml-1">
+                    Log in
+                </Link>
             </div>
         </AuthLayout>
     );

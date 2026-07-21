@@ -1,13 +1,12 @@
 import React from "react";
-import "../features/auth/auth.form.scss";
 
-const AuthLayout = ({ children, title, subtitle }) => {
+const AuthLayout = ({ children, subtitle }) => {
     return (
-        <div className="auth-wrapper">
-            <div className="auth-card">
-                <div className="brand-header">
-                    <div className="brand-title">HabitGrid</div>
-                    {subtitle && <div className="brand-subtitle">{subtitle}</div>}
+        <div className="min-h-screen flex flex-col justify-center items-center bg-[#fafafa] font-sans p-6">
+            <div className="bg-white border border-gray-200 rounded-md w-full max-w-[400px] p-10 shadow-sm">
+                <div className="text-center mb-10">
+                    <div className="text-lg font-bold tracking-[0.15em] uppercase text-black mb-2">HabitGrid</div>
+                    {subtitle && <div className="text-xs text-gray-500 tracking-tight">{subtitle}</div>}
                 </div>
                 {children}
             </div>
