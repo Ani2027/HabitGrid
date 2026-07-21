@@ -12,8 +12,12 @@ export const clearAccessToken = () => {
     accessToken = null;
 };
 
+// In dev: VITE_API_URL is empty → baseURL is "" → Vite proxy forwards /api/* to localhost:5000
+// In production: VITE_API_URL = "https://personal-dashboard-uef5.onrender.com" (set in Vercel)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
 const axiosInstance = axios.create({
-    baseURL: "/",
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 
@@ -62,7 +66,7 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const { data } = await axios.get("/api/auth/refresh-token", {
+                const { data } = await axios.get(`${API_BASE_URL}/api/auth/refresh-token`, {
                     withCredentials: true,
                 });
                 const newToken = data.accessToken;
